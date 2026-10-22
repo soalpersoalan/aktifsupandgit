@@ -148,11 +148,11 @@
 
     // Dapatkan data dari localStorage
     let config = JSON.parse(localStorage.getItem('keepalive_cfg') || JSON.stringify({
-      sbUrl: 'https://gxwqfvjbjzsxkfsmkhnh.supabase.co',             // Isikan Supabase URL kamu
-      sbKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4d3FmdmpianpzeGtmc21raG5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTgxMjcsImV4cCI6MjEwNDI3NDEyN30.G0LmcTU5biVkSGAkVc-FUyZlyWNS7_yDxtf7-Nw-eyg',                          // Isikan Supabase Anon Key kamu
+      sbUrl: '',             // Isikan Supabase URL kamu
+      sbKey: '',                          // Isikan Supabase Anon Key kamu
       ghToken: '',                       // Isikan Personal Access Token GitHub kamu
-      ghOwner: 'nav-art1',                          // Username GitHub kamu
-      ghRepo: 'aplikasi-ujian-online'               // Nama repositori kamu
+      ghOwner: '',                          // Username GitHub kamu
+      ghRepo: ''               // Nama repositori kamu
     }));
     let sbLastPingTime = localStorage.getItem('sb_last_ping');
     let ghLastPingTime = localStorage.getItem('gh_last_ping');
