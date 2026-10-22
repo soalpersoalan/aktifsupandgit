@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keep-Alive Dashboard (Supabase & GitHub)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
+
+  <div class="max-w-3xl mx-auto space-y-6">
+    
+    <!-- HEADER -->
+    <div class="flex justify-between items-center bg-slate-800 p-5 rounded-2xl border border-slate-700 shadow-lg">
+      <div>
+        <h1 class="text-2xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="activity" class="text-indigo-400"></i> Keep-Alive Dashboard
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Menjaga akun gratis Supabase & GitHub tetap aktif</p>
+      </div>
+      <button onclick="toggleModal(true)" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2 rounded-xl text-sm transition">
+        <i data-lucide="settings" class="w-4 h-4"></i> Pengaturan API
+      </button>
+    </div>
+
+    <!-- NOTIFIKASI PERINGATAN -->
+    <div id="globalAlert" class="hidden p-4 rounded-xl text-sm font-medium flex items-center gap-3"></div>
+
+    <!-- TAMPILAN ATAS: SUPABASE (LIMIT 7 HARI) -->
+    <div class="bg-slate-800 rounded-2xl border border-emerald-500/30 p-6 shadow-xl relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+      
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl">
+            <i data-lucide="database" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">Supabase Activity</h2>
+            <p class="text-xs text-slate-400">Batas Jeda: <span class="text-emerald-400 font-semibold">7 Hari</span></p>
+          </div>
+        </div>
+        <span id="sbBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-300">Mengecek...</span>
+      </div>
+
+      <!-- TIMER & STATS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-5 bg-slate-900/60 p-4 rounded-xl border border-slate-700/50">
+        <div>
+          <p class="text-xs text-slate-400">Sisa Waktu Sebelum Paused:</p>
+          <p id="sbCountdown" class="text-2xl font-extrabold text-emerald-400 font-mono mt-1">--d --h --m --s</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400">Terakhir Ditekan / Ping:</p>
+          <p id="sbLastPing" class="text-sm font-medium text-slate-200 mt-2">Belum pernah</p>
+        </div>
+      </div>
+
+      <!-- BUTTON ACTION -->
+      <button onclick="pingSupabase()" id="btnSb" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl flex justify-center items-center gap-2 transition shadow-lg shadow-emerald-900/30">
+        <i data-lucide="zap" class="w-5 h-5"></i> Ping Supabase Sekarang
+      </button>
+    </div>
+
+    <!-- TAMPILAN BAWAH: GITHUB (LIMIT 60 HARI) -->
+    <div class="bg-slate-800 rounded-2xl border border-blue-500/30 p-6 shadow-xl relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+
+      <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center gap-3">
+          <div class="p-3 bg-blue-500/20 text-blue-400 rounded-xl">
+            <i data-lucide="github" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">GitHub Activity</h2>
+            <p class="text-xs text-slate-400">Batas Jeda: <span class="text-blue-400 font-semibold">60 Hari</span></p>
+          </div>
+        </div>
+        <span id="ghBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-300">Mengecek...</span>
+      </div>
+
+      <!-- TIMER & STATS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-5 bg-slate-900/60 p-4 rounded-xl border border-slate-700/50">
+        <div>
+          <p class="text-xs text-slate-400">Sisa Waktu Sebelum Paused:</p>
+          <p id="ghCountdown" class="text-2xl font-extrabold text-blue-400 font-mono mt-1">--d --h --m --s</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400">Terakhir Ditekan / Ping:</p>
+          <p id="ghLastPing" class="text-sm font-medium text-slate-200 mt-2">Belum pernah</p>
+        </div>
+      </div>
+
+      <!-- BUTTON ACTION -->
+      <button onclick="pingGitHub()" id="btnGh" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl flex justify-center items-center gap-2 transition shadow-lg shadow-blue-900/30">
+        <i data-lucide="git-commit" class="w-5 h-5"></i> Ping GitHub (Buat Commit Otomatis)
+      </button>
+    </div>
+
+  </div>
+
+  <!-- MODAL PENGATURAN API -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+      <h3 class="text-xl font-bold text-white flex items-center gap-2">
+        <i data-lucide="key"></i> Konfigurasi Kredensial API
+      </h3>
+      <p class="text-xs text-slate-400">Data ini hanya disimpan secara aman di browser lokal Anda (localStorage).</p>
+      
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Supabase</h4>
+        <div>
+          <label class="text-xs text-slate-300">Supabase URL</label>
+          <input type="text" id="cfgSbUrl" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm mt-1 focus:outline-none focus:border-emerald-500" placeholder="https://xyz.supabase.co">
+        </div>
+        <div>
+          <label class="text-xs text-slate-300">Supabase Anon Key</label>
+          <input type="password" id="cfgSbKey" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm mt-1 focus:outline-none focus:border-emerald-500" placeholder="eyJh...">
+        </div>
+
+        <h4 class="text-xs font-bold text-blue-400 uppercase tracking-wider pt-2">GitHub</h4>
+        <div>
+          <label class="text-xs text-slate-300">GitHub Personal Access Token (PAT)</label>
+          <input type="password" id="cfgGhToken" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm mt-1 focus:outline-none focus:border-blue-500" placeholder="ghp_xxxx...">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs text-slate-300">Username GitHub</label>
+            <input type="text" id="cfgGhOwner" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm mt-1 focus:outline-none focus:border-blue-500" placeholder="octocat">
+          </div>
+          <div>
+            <label class="text-xs text-slate-300">Nama Repositori</label>
+            <input type="text" id="cfgGhRepo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-sm mt-1 focus:outline-none focus:border-blue-500" placeholder="my-repo">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4">
+        <button onclick="toggleModal(false)" class="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg text-sm">Batal</button>
+        <button onclick="saveSettings()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg text-sm">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Dapatkan data dari localStorage
+    let config = JSON.parse(localStorage.getItem('keepalive_cfg') || JSON.stringify({
+      sbUrl: 'https://gxwqfvjbjzsxkfsmkhnh.supabase.co',             // Isikan Supabase URL kamu
+      sbKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4d3FmdmpianpzeGtmc21raG5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2OTgxMjcsImV4cCI6MjEwNDI3NDEyN30.G0LmcTU5biVkSGAkVc-FUyZlyWNS7_yDxtf7-Nw-eyg',                          // Isikan Supabase Anon Key kamu
+      ghToken: '',                       // Isikan Personal Access Token GitHub kamu
+      ghOwner: 'nav-art1',                          // Username GitHub kamu
+      ghRepo: 'aplikasi-ujian-online'               // Nama repositori kamu
+    }));
+    let sbLastPingTime = localStorage.getItem('sb_last_ping');
+    let ghLastPingTime = localStorage.getItem('gh_last_ping');
+
+    const SB_LIMIT_MS = 7 * 24 * 60 * 60 * 1000;  // 7 Hari
+    const GH_LIMIT_MS = 60 * 24 * 60 * 60 * 1000; // 60 Hari
+
+    // Minta izin notifikasi browser
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+
+    function toggleModal(show) {
+      const modal = document.getElementById('settingsModal');
+      if(show) {
+        document.getElementById('cfgSbUrl').value = config.sbUrl || '';
+        document.getElementById('cfgSbKey').value = config.sbKey || '';
+        document.getElementById('cfgGhToken').value = config.ghToken || '';
+        document.getElementById('cfgGhOwner').value = config.ghOwner || '';
+        document.getElementById('cfgGhRepo').value = config.ghRepo || '';
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function saveSettings() {
+      config = {
+        sbUrl: document.getElementById('cfgSbUrl').value.trim(),
+        sbKey: document.getElementById('cfgSbKey').value.trim(),
+        ghToken: document.getElementById('cfgGhToken').value.trim(),
+        ghOwner: document.getElementById('cfgGhOwner').value.trim(),
+        ghRepo: document.getElementById('cfgGhRepo').value.trim(),
+      };
+      localStorage.setItem('keepalive_cfg', JSON.stringify(config));
+      toggleModal(false);
+      alert('Pengaturan berhasil disimpan!');
+      updateDashboardUI();
+    }
+
+    // --- PING SUPABASE ---
+    async function pingSupabase() {
+      if(!config.sbUrl || !config.sbKey) return alert('Silakan isi kredensial Supabase di Pengaturan API terlebih dahulu!');
+      
+      const btn = document.getElementById('btnSb');
+      btn.disabled = true;
+      btn.innerText = "Mengirim Ping...";
+
+      try {
+        const _supabase = supabase.createClient(config.sbUrl, config.sbKey);
+        // Mencoba kirim query dummy ke tabel ping_logs atau query sederhana
+        const { data, error } = await _supabase.from('ping_logs').insert([{ source: 'web_dashboard' }]);
+        
+        // Jika tabel ping_logs belum ada, fallback lakukan select sederhana
+        if (error && error.code === '42P01') { 
+          await _supabase.from('_dummy_').select('*').limit(1);
+        }
+
+        const now = new Date().toISOString();
+        localStorage.setItem('sb_last_ping', now);
+        sbLastPingTime = now;
+        alert(' Berhasil! Aktivitas Supabase diperbarui.');
+      } catch (err) {
+        alert('Gagal Ping Supabase: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="zap" class="w-5 h-5"></i> Ping Supabase Sekarang`;
+        lucide.createIcons();
+        updateDashboardUI();
+      }
+    }
+
+    // --- PING GITHUB ---
+    async function pingGitHub() {
+      if(!config.ghToken || !config.ghOwner || !config.ghRepo) return alert('Silakan isi kredensial GitHub di Pengaturan API terlebih dahulu!');
+
+      const btn = document.getElementById('btnGh');
+      btn.disabled = true;
+      btn.innerText = "Membuat Commit di GitHub...";
+
+      const path = 'keep_alive.txt';
+      const url = `https://api.github.com/repos/${config.ghOwner}/${config.ghRepo}/contents/${path}`;
+
+      try {
+        // 1. Cek SHA file lama jika ada
+        let sha = null;
+        const getRes = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${config.ghToken}` }
+        });
+        if(getRes.ok) {
+          const fileData = await getRes.json();
+          sha = fileData.sha;
+        }
+
+        // 2. Buat Commit baru untuk update file
+        const nowStr = new Date().toLocaleString('id-ID');
+        const content = btoa(`Last keep-alive ping: ${nowStr}`);
+
+        const putRes = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${config.ghToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `keep-alive: ping from web dashboard [${nowStr}]`,
+            content: content,
+            sha: sha || undefined
+          })
+        });
+
+        if(putRes.ok) {
+          const now = new Date().toISOString();
+          localStorage.setItem('gh_last_ping', now);
+          ghLastPingTime = now;
+          alert(' Berhasil! Commit baru telah dibuat di repositori GitHub kamu.');
+        } else {
+          const errData = await putRes.json();
+          throw new Error(errData.message || 'Gagal merespons API GitHub');
+        }
+      } catch (err) {
+        alert('Gagal Ping GitHub: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="git-commit" class="w-5 h-5"></i> Ping GitHub (Buat Commit Otomatis)`;
+        lucide.createIcons();
+        updateDashboardUI();
+      }
+    }
+
+    // --- TIMERS & UI UPDATES ---
+    function formatTimeRemaining(ms) {
+      if (ms <= 0) return "EXPIRED / PAUSED";
+      const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((ms % (1000 * 60)) / 1000);
+      return `${days}d ${hours}h ${mins}m ${secs}s`;
+    }
+
+    function updateDashboardUI() {
+      const now = new Date().getTime();
+
+      // Update Supabase
+      if (sbLastPingTime) {
+        const elapsed = now - new Date(sbLastPingTime).getTime();
+        const remaining = SB_LIMIT_MS - elapsed;
+        document.getElementById('sbCountdown').innerText = formatTimeRemaining(remaining);
+        document.getElementById('sbLastPing').innerText = new Date(sbLastPingTime).toLocaleString('id-ID');
+        
+        const badge = document.getElementById('sbBadge');
+        if (remaining < 2 * 24 * 60 * 60 * 1000) { // Kurang dari 2 hari
+          badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/40";
+          badge.innerText = "Kritis! Segera Ping";
+        } else {
+          badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+          badge.innerText = "Aktif & Aman";
+        }
+      }
+
+      // Update GitHub
+      if (ghLastPingTime) {
+        const elapsed = now - new Date(ghLastPingTime).getTime();
+        const remaining = GH_LIMIT_MS - elapsed;
+        document.getElementById('ghCountdown').innerText = formatTimeRemaining(remaining);
+        document.getElementById('ghLastPing').innerText = new Date(ghLastPingTime).toLocaleString('id-ID');
+
+        const badge = document.getElementById('ghBadge');
+        if (remaining < 10 * 24 * 60 * 60 * 1000) { // Kurang dari 10 hari
+          badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/40";
+          badge.innerText = "Kritis! Segera Ping";
+        } else {
+          badge.className = "px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/40";
+          badge.innerText = "Aktif & Aman";
+        }
+      }
+    }
+
+    // Jalankan timer setiap 1 detik
+    setInterval(updateDashboardUI, 1000);
+    updateDashboardUI();
+  </script>
+</body>
+</html>
